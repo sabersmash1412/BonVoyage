@@ -1,0 +1,1 @@
+export const planPreferences = ["Culture", "Beaches", "Festivals", "Shopping", "Nightlife"] as const;

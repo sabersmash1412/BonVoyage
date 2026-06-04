@@ -1,0 +1,71 @@
+name: Cypress Tests
+
+on: push
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache dependencies for Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.next/cache
+          key: nextjs-cache-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            nextjs-cache-${{ runner.os }}-
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          build: npm run build
+          start: npm start
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAP_ID: ${{secrets.NEXT_PUBLIC_GOOGLE_MAP_ID}}
+          AMADEUS_CLIENT_ID: ${{secrets.AMADEUS_CLIENT_ID}}
+          AMADEUS_CLIENT_SECRET: ${{secrets.AMADEUS_CLIENT_SECRET}}
+          TRAVELPAYOUTS_MARKER: ${{secrets.TRAVELPAYOUTS_MARKER}}
+          RAPIDAPI_KEY: ${{secrets.RAPIDAPI_KEY}}
+          SUPABASE_URL: ${{secrets.SUPABASE_URL}}
+          SUPABASE_SERVICE_ROLE_KEY: ${{secrets.SUPABASE_SERVICE_ROLE_KEY}}
+
+      - name: Run component tests
+        run: npx cypress run --component
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
+          NEXT_PUBLIC_GOOGLE_MAP_ID: ${{secrets.NEXT_PUBLIC_GOOGLE_MAP_ID}}
+          AMADEUS_CLIENT_ID: ${{secrets.AMADEUS_CLIENT_ID}}
+          AMADEUS_CLIENT_SECRET: ${{secrets.AMADEUS_CLIENT_SECRET}}
+          TRAVELPAYOUTS_MARKER: ${{secrets.TRAVELPAYOUTS_MARKER}}
+          RAPIDAPI_KEY: ${{secrets.RAPIDAPI_KEY}}
+          SUPABASE_URL: ${{secrets.SUPABASE_URL}}
+          SUPABASE_SERVICE_ROLE_KEY: ${{secrets.SUPABASE_SERVICE_ROLE_KEY}}

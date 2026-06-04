@@ -1,0 +1,38 @@
+.loading-plane {
+    text-align: center;
+    width: 550px;
+    margin: 20px auto;
+}
+
+.loading-plane .svg-plane {
+    display: inline-block;
+    animation: flying-plane ease-in-out 4s infinite;
+}
+
+.loading-plane .svg-globe {
+    display: inline-block;
+    padding: 10px 0;
+    animation: spinning-globe linear 15s infinite;
+}
+
+@keyframes spinning-globe {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes flying-plane {
+
+    from,
+    to {
+        transform: rotateX(0deg);
+    }
+
+    50% {
+        transform: rotateX(50deg);
+    }
+}

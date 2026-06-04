@@ -1,0 +1,46 @@
+name: Weekly Global Cost Scraper
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'  
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scrape global costs
+        run: |
+          base_url="https://bon-voyage-nine.vercel.app/api/test-scrape"
+          
+          countries=(
+            "china" "india" "united-states" "indonesia" "pakistan" "nigeria" "brazil" "bangladesh" "russia"
+            "ethiopia" "japan" "mexico" "egypt" "philippines" "dr-congo" "vietnam" "iran" "turkey" "germany"
+            "france" "united-kingdom" "thailand" "south-africa" "italy" "tanzania" "myanmar" "colombia" "south-korea"
+            "kenya" "spain" "argentina" "uganda" "algeria" "afghanistan" "ukraine" "sudan" "poland" "iraq"
+            "canada" "morocco" "angola" "uzbekistan" "peru" "saudi-arabia" "ghana" "malaysia" "ivory-coast"
+            "mozambique" "nepal" "venezuela" "cameroon" "yemen" "australia" "north-korea" "madagascar" "syria"
+            "taiwan" "burkina-faso" "niger" "sri-lanka" "mali" "kazakhstan" "zambia" "chile" "chad" "romania"
+            "malawi" "netherlands" "cambodia" "guatemala" "ecuador" "senegal" "zimbabwe" "benin" "burundi" "rwanda"
+            "guinea" "south-sudan" "bolivia" "belgium" "tunisia" "somalia" "cuba" "haiti" "czech-republic"
+            "dominican-republic" "sweden" "greece" "jordan" "portugal" "azerbaijan" "honduras" "united-arab-emirates"
+            "israel" "hungary" "tajikistan" "belarus" "austria" "papua-new-guinea" "switzerland" "togo"
+            "sierra-leone" "laos" "paraguay" "bulgaria" "kyrgyzstan" "libya" "nicaragua" "serbia" "congo"
+            "turkmenistan" "lebanon" "el-salvador" "singapore" "denmark" "finland" "norway" "slovakia" "palestine"
+            "liberia" "central-african-republic" "ireland" "new-zealand" "costa-rica" "oman" "mauritania" "kuwait"
+            "panama" "croatia" "bosnia-and-herzegovina" "georgia" "eritrea" "uruguay" "mongolia" "armenia"
+            "lithuania" "albania" "jamaica" "gambia" "qatar" "moldova" "namibia" "botswana" "slovenia" "gabon"
+            "lesotho" "latvia" "guinea-bissau" "equatorial-guinea" "north-macedonia" "bahrain" "estonia"
+            "trinidad-and-tobago" "cyprus" "mauritius" "east-timor" "eswatini" "djibouti" "fiji" "comoros"
+            "bhutan" "guyana" "luxembourg" "montenegro" "solomon-islands" "suriname" "cape-verde" "malta" "brunei"
+            "maldives" "belize" "bahamas" "iceland" "barbados" "vanuatu" "sao-tome-and-principe" "samoa"
+            "saint-lucia" "curacao" "kiribati" "grenada" "saint-vincent" "tonga" "antigua-and-barbuda" "seychelles"
+            "andorra" "dominica" "cayman-islands" "saint-kitts-and-nevis" "marshall-islands" "monaco"
+            "liechtenstein" "san-marino" "palau" "nauru" "tuvalu" "vatican"
+          )
+
+          for country in "${countries[@]}"
+          do
+            echo "Scraping $country..."
+            curl -s "${base_url}?country=$country"
+          done
