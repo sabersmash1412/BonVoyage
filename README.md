@@ -1,4 +1,4 @@
-# BonVoyage
+# BonVoyage - Original repo with commit & contribution history is at https://github.com/imrenzo/BonVoyage
 
 ## Instructions to view website
 
@@ -20,4 +20,3 @@ Password: Password123!
         npm run dev
 4. Open website on http://localhost:3000/ or on the url specified by _npm run dev_
 
-Original repo with commit & contribution history is at https://github.com/imrenzo/BonVoyage
