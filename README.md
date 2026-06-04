@@ -1,4 +1,5 @@
-# BonVoyage - Original repo with commit & contribution history is at https://github.com/imrenzo/BonVoyage
+# BonVoyage 
+- Original repo with commit & contribution history is at https://github.com/imrenzo/BonVoyage
 
 ## Instructions to view website
 
