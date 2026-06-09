@@ -5,7 +5,7 @@
 
 **It is recommended to view the website in chrome browser (without any active extensions) or in chrome incognito browser.**
 
-Live URL: [[bon-voyage-iota.vercel.app](https://bon-voyage-iota.vercel.app/login)]
+Live URL: [bon-voyage-iota.vercel.app](https://bon-voyage-iota.vercel.app/login)
 
 Test account:
 Username: buffalowee@gmail.com
