@@ -12,28 +12,20 @@ export function createClient(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name, 
-            value,
-            ...options,
-          })
+          // Can't mutate the incoming request cookies in middleware; only set on the response
           response.cookies.set({
             name,
             value,
             ...options,
           })
         },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
+        remove(name: string, options?: CookieOptions) {
+          // Prefer deleting from the response. If not available, overwrite with expired cookie.
+          try {
+            response.cookies.delete(name)
+          } catch {
+            response.cookies.set({ name, value: '', maxAge: 0, ...options })
+          }
         },
       },
     }

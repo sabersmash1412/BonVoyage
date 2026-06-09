@@ -1,7 +1,7 @@
 'use client';
 
 import { createBrowserClient } from '@supabase/ssr';
-import { redirect } from "next/navigation";
+
 
 export async function signInWithGoogle() {
   const supabase = createBrowserClient(
@@ -20,6 +20,10 @@ export async function signInWithGoogle() {
 
   if (error) {
     console.error(error);
-    return redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    // `redirect` from next/navigation is server-only; use client navigation here
+    if (typeof window !== 'undefined') {
+      window.location.href = `/login?error=${encodeURIComponent(error.message)}`;
+    }
+    return;
   }
 }

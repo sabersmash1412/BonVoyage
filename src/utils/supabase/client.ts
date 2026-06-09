@@ -12,18 +12,21 @@ export function createClient() {
       {
         cookies: {
           get(name: string) {
-            const cookie = document.cookie
-              .split('; ')
-              .find(row => row.startsWith(`${name}=`));
-            return cookie ? cookie.split('=')[1] : undefined;
+            const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`))
+            return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : undefined
           },
-          set(name: string, value: string) {
-            document.cookie = `${name}=${value}; Path=/; SameSite=Lax; Secure`;
+          set(name: string, value: string, options?: { maxAge?: number; path?: string; sameSite?: 'Lax'|'Strict'|'None'; secure?: boolean }) {
+            const parts: string[] = [`${name}=${encodeURIComponent(value)}`]
+            parts.push(`Path=${options?.path ?? '/'}`)
+            parts.push(`SameSite=${options?.sameSite ?? 'Lax'}`)
+            if (options?.secure ?? true) parts.push('Secure')
+            if (typeof options?.maxAge === 'number') parts.push(`Max-Age=${options.maxAge}`)
+            document.cookie = parts.join('; ')
           },
           remove(name: string) {
             document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax; Secure`;
           },
-        },
+        } as any,
       }
     );
   }

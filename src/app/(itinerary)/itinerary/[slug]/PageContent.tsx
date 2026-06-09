@@ -7,7 +7,7 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import { ColourContext, getDateHueMap } from "./_context/ColourContext";
 import { ActivityProps } from "@/types/itinerary/activity/activityProps";
 import CostBreakdown from "./CostBreakdown";
-import { AlertDialog, AlertDialogCancel, AlertDialogContentForCosts, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import TripOverview from "@/components/itinerary/TripOverview";
 import { ChevronDownIcon, DollarSign } from 'lucide-react';
 import DeleteDialog from "@/components/itinerary/DeleteDialog";
@@ -75,7 +75,7 @@ export default function PageContent({ activities, itinerary_id, slug, itineraryO
                         </div>
                     </APIProvider>
                 </div >
-                <AlertDialogContentForCosts>
+                <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Costs breakdown</AlertDialogTitle>
                         <div className="text-muted-foreground text-sm max-w-2xl w-full">
@@ -85,7 +85,7 @@ export default function PageContent({ activities, itinerary_id, slug, itineraryO
                     <AlertDialogFooter>
                         <AlertDialogCancel data-cy='costs-breakdown-tab'>Close costs breakdown</AlertDialogCancel>
                     </AlertDialogFooter>
-                </AlertDialogContentForCosts>
+                </AlertDialogContent>
             </AlertDialog>
         </ColourContext.Provider >
     </>)

@@ -16,14 +16,21 @@ export default function useUserAuth() {
                 return;  // Exit if supabase is not available
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
 
-            // redirect if session is null
-            if (!session) {
-                router.push("/login");
+                // redirect if session is null
+                if (!session) {
+                    router.push("/login");
+                }
+            } catch (err) {
+                console.error('Error checking session', err);
+                // If session is missing or an auth error occurs, redirect to login
+                try { router.push('/login'); } catch {}
+            } finally {
+                // user has been auth or redirected; stop loading
+                setLoading(false);
             }
-            // user has been auth and allow rest of page to load
-            setLoading(false);
         };
 
         checkAuth();
