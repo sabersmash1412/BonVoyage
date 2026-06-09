@@ -13,20 +13,7 @@ import {
 import { ShieldCheck, MapPin, Route, Clock, AlertTriangle, Wrench } from "lucide-react"
 
 export function HomeDisclaimer() {
-  const [open, setOpen] = useState(false)
-
-  useEffect(() => {
-    // Check if user already accepted terms
-    const hasAccepted = localStorage.getItem("disclaimer_accepted")
-    if (!hasAccepted) {
-      setOpen(true)
-    }
-  }, [])
-
-  const handleAccept = () => {
-    localStorage.setItem("disclaimer_accepted", "true")
-    setOpen(false)
-  }
+  const [open, setOpen] = useState(true)
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -55,21 +42,21 @@ export function HomeDisclaimer() {
             <div className="flex gap-3 items-start p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
               <MapPin className="h-5 w-5 text-green-600 dark:text-green-500 shrink-0 mt-0.5" />
               <p className="text-sm">
-                <strong className="text-foreground font-medium">Community Platform</strong> You can create post, attach images, like, comment and interact with other users. 
+                <strong className="text-foreground font-medium">Community Platform: </strong> You can create post, attach images, like, comment and interact with other users. 
               </p>
             </div>
 
             <div className="flex gap-3 items-start p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
               <Route className="h-5 w-5 text-green-600 dark:text-green-500 shrink-0 mt-0.5" />
               <p className="text-sm">
-                <strong className="text-foreground font-medium">Itineraries</strong> Pre-existing itineraries which were created during production.
+                <strong className="text-foreground font-medium">Itineraries: </strong> Pre-existing itineraries which were created during production.
               </p>
             </div>
 
             <div className="flex gap-3 items-start p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
               <Route className="h-5 w-5 text-green-600 dark:text-green-500 shrink-0 mt-0.5" />
               <p className="text-sm">
-                <strong className="text-foreground font-medium">Flights, Hotels & Costs</strong> Estimated costs for each itinerary, based of available info online.
+                <strong className="text-foreground font-medium">Flights, Hotels & Costs: </strong> Estimated costs for each itinerary, based of available info online.
               </p>
             </div>
           </div>
@@ -84,7 +71,7 @@ export function HomeDisclaimer() {
             <div className="flex gap-3 items-start p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
               <Clock className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm">
-                <strong className="text-foreground font-medium">AI itinerary generation (Plan Page):</strong> 
+                <strong className="text-foreground font-medium">AI itinerary generation (Plan Page): </strong> 
                 <span className="text-muted-foreground">Lack of credits (overspent on gemini)</span>
               </div>
             </div>
@@ -92,7 +79,7 @@ export function HomeDisclaimer() {
             <div className="flex gap-3 items-start p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
               <Route className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm">
-                <strong className="text-foreground font-medium">Map Display on Google Maps</strong>
+                <strong className="text-foreground font-medium">Map Display on Google Maps: </strong>
                 <span className="text-muted-foreground">Lack of credits (google maps api)</span>
               </div>
             </div>
@@ -100,7 +87,7 @@ export function HomeDisclaimer() {
             <div className="flex gap-3 items-start p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
               <Route className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm">
-                <strong className="text-foreground font-medium">Route Optimiser</strong>
+                <strong className="text-foreground font-medium">Route Optimiser: </strong>
                 <span className="text-muted-foreground">Hence, all distance will be shown as 'infinity'</span>
               </div>
             </div>
@@ -109,7 +96,7 @@ export function HomeDisclaimer() {
 
         <AlertDialogFooter className="sm:justify-end gap-2 pt-2 border-t">
           <AlertDialogAction 
-            onClick={handleAccept}
+            onClick={() => setOpen(false)}
             className="w-full sm:w-auto px-6 py-5 rounded-md shadow-lg shadow-primary/20 text-base"
           >
             Gotcha
