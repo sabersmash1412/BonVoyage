@@ -14,8 +14,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { login } from "@/lib/auth-actions"
-import SignInWithGoogleButton from "./SignInWithGoogleButton"
+// Google sign-in temporarily removed
 import { useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 
 export function LoginFormContent({
   className,
@@ -24,6 +27,41 @@ export function LoginFormContent({
   const searchParams = useSearchParams()
   const redirectedFrom = searchParams.get('redirectedFrom') || '/plan'
   const error = searchParams.get('error')
+
+  const router = useRouter()
+
+  useEffect(() => {
+    // After OAuth redirect, Supabase may include tokens in the URL fragment.
+    // Initialize the browser client and check for a session; if present, forward user.
+    if (typeof window === 'undefined') return
+    const init = async () => {
+      try {
+        const supabase = createClient()
+        if (!supabase) return
+        // Try immediate session fetch
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          router.replace(redirectedFrom)
+          return
+        }
+
+        // Subscribe to auth state changes in case the client processes the URL fragment
+        const { data } = supabase.auth.onAuthStateChange((event: any, session: any) => {
+          if (session) {
+            router.replace(redirectedFrom)
+          }
+        })
+
+        // cleanup
+        return () => {
+          try { (data as any)?.subscription?.unsubscribe?.() } catch {}
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+    init()
+  }, [redirectedFrom, router])
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -65,7 +103,6 @@ export function LoginFormContent({
               <Button type="submit" className="w-full">
                 Login
               </Button>
-              <SignInWithGoogleButton />
             </div>
           </form>
           <div className="mt-4 text-center text-sm">
