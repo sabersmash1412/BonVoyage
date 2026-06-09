@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
-import { User, SupabaseClient } from "@supabase/supabase-js";
+import { User, SupabaseClient, type Session } from "@supabase/supabase-js";
 
 const LoginButton = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -35,14 +35,14 @@ const LoginButton = () => {
     };
     fetchUser();
 
-    const { data } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+    const { data } = supabaseClient.auth.onAuthStateChange((event: unknown, session: Session | null) => {
       setUser(session?.user ?? null);
     });
 
     return () => {
       mounted = false;
       try {
-        (data as any)?.subscription?.unsubscribe?.();
+        ;(data as { subscription?: { unsubscribe?: () => void } })?.subscription?.unsubscribe?.()
       } catch {}
     };
   }, [supabaseClient]);
@@ -93,7 +93,7 @@ const LoginButton = () => {
         try { localStorage.removeItem('sb-refresh-token'); } catch {}
         // Redirect and hard reload to ensure middleware/server sees cleared cookies
         window.location.href = '/login';
-      } catch (e) {
+      } catch {
         try { router.replace('/login'); } catch {}
       }
     }

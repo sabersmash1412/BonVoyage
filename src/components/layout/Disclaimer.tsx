@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { ShieldCheck, MapPin, Route, Clock, AlertTriangle, Wrench } from "lucide-react"
+import { ShieldCheck, MapPin, Route, Clock, AlertTriangle } from "lucide-react"
 
 export function HomeDisclaimer() {
   const [open, setOpen] = useState(true)
@@ -65,7 +65,7 @@ export function HomeDisclaimer() {
           <div className="space-y-2 pt-2">
             <h3 className="text-sm font-semibold text-amber-600 dark:text-amber-500 flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
-              WHAT DOESN'T WORK & WHY
+              WHAT DOESN&apos;T WORK &amp; WHY
             </h3>
             
             <div className="flex gap-3 items-start p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
@@ -88,7 +88,7 @@ export function HomeDisclaimer() {
               <Route className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground font-medium">Route Optimiser: </strong>
-                <span className="text-muted-foreground">Hence, all distance will be shown as 'infinity'</span>
+                <span className="text-muted-foreground">Hence, all distance will be shown as &apos;infinity&apos;</span>
               </div>
             </div>
           </div>

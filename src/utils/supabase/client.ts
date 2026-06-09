@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { createBrowserClient } from '@supabase/ssr';
 
 let supabaseClient: ReturnType<typeof createBrowserClient> | null = null; 
@@ -9,8 +11,9 @@ export function createClient() {
     supabaseClient = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
+      ({
+        cookies: (
+          {
           get(name: string) {
             const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`))
             return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : undefined
@@ -26,8 +29,8 @@ export function createClient() {
           remove(name: string) {
             document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax; Secure`;
           },
-        } as any,
-      }
+        } as unknown) as any
+      } as any)
     );
   }
 

@@ -19,6 +19,7 @@ import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import type { Session } from '@supabase/supabase-js'
 
 export function LoginFormContent({
   className,
@@ -46,7 +47,7 @@ export function LoginFormContent({
         }
 
         // Subscribe to auth state changes in case the client processes the URL fragment
-        const { data } = supabase.auth.onAuthStateChange((event: any, session: any) => {
+        const { data } = supabase.auth.onAuthStateChange((event: unknown, session: Session | null) => {
           if (session) {
             router.replace(redirectedFrom)
           }
@@ -54,9 +55,11 @@ export function LoginFormContent({
 
         // cleanup
         return () => {
-          try { (data as any)?.subscription?.unsubscribe?.() } catch {}
+          try {
+            ;(data as { subscription?: { unsubscribe?: () => void } }).subscription?.unsubscribe?.()
+          } catch {}
         }
-      } catch (err) {
+      } catch {
         // ignore
       }
     }
