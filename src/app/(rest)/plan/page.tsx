@@ -29,6 +29,25 @@ export default function InputForm() {
             : !submiting
                 // shows form i.e. when form hasn't been submitted
                 ? <div className="flex flex-col gap-5 w-3xl mx-auto">
+                    <div className="flex gap-3 justify-center mb-4">
+                        <Button asChild variant="outline">
+                            <a href="https://drive.google.com/file/d/1bFVTc_FFaIgeOkD15p6EhG8T3gOVufHN/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+                            Project Poster
+                            </a>
+                        </Button>
+                        
+                        <Button asChild variant="outline">
+                            <a href="https://drive.google.com/file/d/1HQajaHgwM4FIURltRFrfehqmX2yvcG3n/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+                            Project Demo Video
+                            </a>
+                        </Button>
+                        
+                        <Button asChild variant="outline">
+                            <a href="https://drive.google.com/file/d/1mAi9-vZ-qErbM773rd4hpDrdg4hrFRzu/view?usp=sharing" target="_blank" rel="noopener noreferrer">
+                            Project Documentation
+                            </a>
+                        </Button>
+                    </div>
                     <div className="justify-items-center">
                         <h1 className="text-3xl">
                             Tell us your preferences
