@@ -69,7 +69,13 @@ export function LoginFormContent({
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Test account
+          </CardDescription>
+          <CardDescription>
+            Username: buffalowee@gmail.com 
+          </CardDescription>
+          <CardDescription>
+            Password: Password123!
           </CardDescription>
           {error && (
             <div className="text-red-500 text-sm">
