@@ -4,13 +4,38 @@ import { ItineraryFormProps, AIoutputProps } from "@/types/plan/planProps";
 import { getUser } from "../getUser";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getActivities, insertNewActivities } from "./activityMethods";
+import { baseActivitySchema } from "@/types/itinerary/activity/activitySchema";
+import { z } from "zod";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_KEY }); //get from supabase env var; process.env.GEMINI_KEY
+const aiOutputSchema = z.object({
+  costBreakdown: z.object({
+    origin_airport_code: z.string().min(3),
+    destination_airport_code: z.string().min(3),
+  }),
+  activities: z.array(baseActivitySchema.extend({
+    duration_minutes: z.coerce.string(),
+    lat: z.coerce.number(),
+    lng: z.coerce.number(),
+  })).min(1),
+});
+
+function getGeminiClient() {
+  if (!process.env.GEMINI_KEY) {
+    throw new Error("GEMINI_KEY is not configured");
+  }
+
+  return new GoogleGenAI({ apiKey: process.env.GEMINI_KEY });
+}
 
 function sanitiseAIoutput(response: GenerateContentResponse) {
   console.log("sanitising AI output...")
-  const activitiesJSONString = (response.text as string).replace(/^```json\s*/, '').replace(/\s*```$/, '')
-  return JSON.parse(activitiesJSONString)
+  const responseText = response.text
+  if (!responseText) {
+    throw new Error("Gemini returned an empty response");
+  }
+
+  const activitiesJSONString = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+  return aiOutputSchema.parse(JSON.parse(activitiesJSONString))
 }
 
 function generateAIprompt(formInput: ItineraryFormProps) {
@@ -29,67 +54,67 @@ function generateAIprompt(formInput: ItineraryFormProps) {
         4. lat is the latitude of the location and lng is the longitude of the location
         5. Do not include any activities related to the hotel as currently hotel is unknown
 
-        Output for me a travel itinerary in JSON in the following example format:
+        Output only valid JSON in the following format. Do not include markdown fences or explanations:
         {
           "costBreakdown":{
               "origin_airport_code": "SIN",
               "destination_airport_code": "NRT"
-          }
+          },
           "activities": [
             {
                 "date": "2025-06-10",
                 "time": "09:00",
                 "title": "Fushimi Inari Shrine",
                 "location": "68 Fukakusa Yabunouchicho, Kyoto",
-                "type": "sightseeing",
-                "duration_minutes": 90,
+                "type": "activity",
+                "duration_minutes": "90",
                 "notes": "",
-                lat:,
-                lng:
+                "lat": 34.9671,
+                "lng": 135.7727
             },
             {
                 "date": "2025-06-10",
                 "time": "12:00",
                 "title": "Lunch at Veggie Café",
                 "location": "123 Kyoto Veg Rd",
-                "type": "restaurant",
-                "duration_minutes": 60,
+                "type": "meal",
+                "duration_minutes": "60",
                 "notes": "",
-                lat:,
-                lng:
+                "lat": 35.0116,
+                "lng": 135.7681
             },
             {
                 "date": "2025-06-10",
                 "time": "14:00",
                 "title": "Nishiki Market Walk",
                 "location": "Downtown Kyoto",
-                "type": "shopping",
-                "duration_minutes": 90,
+                "type": "activity",
+                "duration_minutes": "90",
                 "notes": "",
-                lat:,
-                lng:
+                "lat": 35.0050,
+                "lng": 135.7647
             },
             {
                 "date": "2025-06-11",
                 "time": "10:00",
                 "title": "Kinkaku-ji (Golden Pavilion)",
                 "location": "1 Kinkakuji-cho, Kita-ku, Kyoto",
-                "type": "sightseeing",
-                "duration_minutes": 60,
+                "type": "activity",
+                "duration_minutes": "60",
                 "notes": "",
-                lat:,
-                lng:
+                "lat": 35.0394,
+                "lng": 135.7292
             },
             {
                 "date": "2025-06-11",
                 "time": "13:00",
                 "title": "Tea Ceremony Experience",
                 "location": "Camellia Flower Teahouse",
-                "type": "cultural",
-                "duration_minutes": 75,
+                "type": "activity",
+                "duration_minutes": "75",
                 "notes": "",
-                lat:,
-                lng:
+                "lat": 34.9985,
+                "lng": 135.7786
             }
           ]
         }
@@ -99,9 +124,13 @@ function generateAIprompt(formInput: ItineraryFormProps) {
 
 async function getAIresponse(prompt: string) {
   console.log("getting response from gemini")
+  const ai = getGeminiClient();
   return ai.models.generateContent({
-    model: "gemini-2.0-flash",
+    model: "gemini-3.1-flash-lite",
     contents: prompt,
+    config: {
+      responseMimeType: "application/json",
+    },
   });
 }
 
@@ -142,18 +171,13 @@ function convertAiActivityArray(activities: BaseActivity[], user_id: string, iti
 }
 
 export async function generateItinerary(formInput: ItineraryFormProps, supabase: SupabaseClient, user_id: string) {
-  try {
-    const prompt = generateAIprompt(formInput)
-    const AIresponse = await getAIresponse(prompt)
-    const itineraryObject = sanitiseAIoutput(AIresponse)
-    const itineraryId = await insertNewItinerary(supabase, user_id, formInput, itineraryObject)
-    const activitiesForDb = convertAiActivityArray(itineraryObject.activities, user_id, itineraryId)
-    await insertNewActivities(supabase, activitiesForDb)
-    return itineraryId
-  } catch (error) {
-    console.log(error)
-    return null
-  }
+  const prompt = generateAIprompt(formInput)
+  const AIresponse = await getAIresponse(prompt)
+  const itineraryObject = sanitiseAIoutput(AIresponse)
+  const itineraryId = await insertNewItinerary(supabase, user_id, formInput, itineraryObject)
+  const activitiesForDb = convertAiActivityArray(itineraryObject.activities, user_id, itineraryId)
+  await insertNewActivities(supabase, activitiesForDb)
+  return itineraryId
 }
 
 export async function getItineraryOverview(supabase: SupabaseClient, itinerary_id: number) {

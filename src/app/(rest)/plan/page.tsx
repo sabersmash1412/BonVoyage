@@ -19,7 +19,8 @@ export default function InputForm() {
         form,
         submiting,
         submitForm,
-        loading
+        loading,
+        submitError
     } = InputFormController()
 
     return (<>
@@ -55,6 +56,11 @@ export default function InputForm() {
                     </div>
                     <Card className="shadow-md rounded-lg ">
                         <CardContent>
+                            {submitError && (
+                                <div className="mb-4 rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                                    {submitError}
+                                </div>
+                            )}
                             <Form {...form}>
                                 <form onSubmit={form.handleSubmit(submitForm)} className="space-y-8">
                                     <FormField

@@ -8,9 +8,11 @@ import { convertFormInputDate } from "@/utils/dateFunctions"
 export function useSubmitForm() {
     const router = useRouter();
     const [submiting, setSubmiting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
 
     async function submitForm(formInput: ItineraryFormProps) {
         try {
+            setSubmitError(null)
             // convert formInput Date objects from current local time to just the date string itself 
             // as backend runs in UTC and we don't want problems arising due to activity date range
             const values = convertFormInputDate(formInput)
@@ -24,8 +26,16 @@ export function useSubmitForm() {
             router.push(`/itinerary/${itineraryId}`)
         } catch (error) {
             console.error(error);
-            router.push(`/404`)
+            setSubmiting(false)
+
+            if (axios.isAxiosError(error)) {
+                const responseError = error.response?.data?.details || error.response?.data?.error
+                setSubmitError(responseError || "Unable to generate itinerary. Please try again.")
+                return
+            }
+
+            setSubmitError("Unable to generate itinerary. Please try again.")
         }
     }
-    return { submiting, submitForm }
+    return { submiting, submitForm, submitError }
 }

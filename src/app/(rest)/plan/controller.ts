@@ -5,6 +5,6 @@ import useUserAuth from "./useUserAuth";
 export default function InputFormController() {
     const { form } = useInputForm();
     const { loading } = useUserAuth();
-    const { submiting, submitForm } = useSubmitForm()
-    return { form, submiting, submitForm, loading }
+    const { submiting, submitForm, submitError } = useSubmitForm()
+    return { form, submiting, submitForm, loading, submitError }
 }

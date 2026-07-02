@@ -3,6 +3,10 @@ import { deleteItinerary, generateItinerary, getAllItineraries } from "@/lib/iti
 import { allItinerariesArraySchema, deleteItinerarySchema, itineraryFormSchema } from "@/types/itinerary/itinerarySchema";
 import { ZodError } from "zod";
 
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown error";
+}
+
 // generate itinerary by posting user's form input to backend AI
 export async function POST(request: Request) {
   try {
@@ -38,9 +42,12 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error("Error parsing request:", error);
-    return new Response(JSON.stringify({ error: "generateItinerary failed" }), {
-      status: 400
+    console.error("generateItinerary failed:", error);
+    return new Response(JSON.stringify({
+      error: "generateItinerary failed",
+      details: errorMessage(error),
+    }), {
+      status: 500
     });
   }
 }
