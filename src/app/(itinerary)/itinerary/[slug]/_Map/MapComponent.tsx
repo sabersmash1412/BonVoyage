@@ -1,69 +1,66 @@
 'use client'
 
-import L from 'leaflet';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { useMapController } from './useMapController';
-import { MapComponentProps, PlaceForMarkers } from '@/types/itinerary/Map/mapProps';
+import { MapComponentProps } from '@/types/itinerary/Map/mapProps';
 import { useColourContext } from '../_context/ColourContext';
 import { ActivityMarker } from '@/components/itinerary/CustomMarker';
+import type * as Leaflet from 'leaflet';
 
 type LeafletContainer = HTMLDivElement & {
     _leaflet_id?: number;
 }
 
-function toLatLngBounds(places: PlaceForMarkers[]) {
-    return L.latLngBounds(places.map((place) => [place.coordinates.lat, place.coordinates.lng]));
-}
-
 export default function MapComponent({ activities }: MapComponentProps) {
     const mapElementRef = useRef<LeafletContainer | null>(null);
-    const mapRef = useRef<L.Map | null>(null);
-    const markerLayerRef = useRef<L.LayerGroup | null>(null);
+    const mapRef = useRef<Leaflet.Map | null>(null);
+    const markerLayerRef = useRef<Leaflet.LayerGroup | null>(null);
+    const leafletRef = useRef<typeof Leaflet | null>(null);
+    const [mapReady, setMapReady] = useState(false);
     const { fetchStatus, places, clickMarker } = useMapController(activities);
     const dateHueMap = useColourContext();
 
-    const markers = useMemo(() => places.map((place) => {
-        const markerHtml = renderToStaticMarkup(
-            <ActivityMarker orderWithinDay={place.orderWithinDay} colour={dateHueMap.get(place.date)} />
-        );
-
-        return {
-            ...place,
-            icon: L.divIcon({
-                html: markerHtml,
-                className: 'bonvoyage-map-marker',
-                iconSize: [32, 32],
-                iconAnchor: [16, 32],
-            }),
-        };
-    }), [dateHueMap, places]);
-
     useEffect(() => {
+        let isMounted = true;
         const mapElement = mapElementRef.current;
         if (!mapElement || mapRef.current) return;
 
-        // Leaflet stores an internal id on the DOM node. Clear it defensively for
-        // React dev remounts so the same node can be reused without throwing.
-        delete mapElement._leaflet_id;
+        async function initialiseMap() {
+            const L = await import('leaflet');
+            if (!isMounted || !mapElementRef.current || mapRef.current) return;
 
-        const map = L.map(mapElement, {
-            zoomControl: false,
-        }).setView([0, 0], 2);
+            const currentMapElement = mapElementRef.current;
 
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        }).addTo(map);
+            // Leaflet stores an internal id on the DOM node. Clear it defensively
+            // for React dev remounts so the same node can be reused without throwing.
+            delete currentMapElement._leaflet_id;
 
-        const markerLayer = L.layerGroup().addTo(map);
-        mapRef.current = map;
-        markerLayerRef.current = markerLayer;
+            const map = L.map(currentMapElement, {
+                zoomControl: false,
+            }).setView([0, 0], 2);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            }).addTo(map);
+
+            const markerLayer = L.layerGroup().addTo(map);
+            leafletRef.current = L;
+            mapRef.current = map;
+            markerLayerRef.current = markerLayer;
+            setMapReady(true);
+        }
+
+        initialiseMap();
 
         return () => {
-            markerLayer.clearLayers();
-            map.remove();
+            isMounted = false;
+            markerLayerRef.current?.clearLayers();
+            mapRef.current?.remove();
             mapRef.current = null;
             markerLayerRef.current = null;
+            leafletRef.current = null;
+            setMapReady(false);
             delete mapElement._leaflet_id;
         };
     }, []);
@@ -71,23 +68,35 @@ export default function MapComponent({ activities }: MapComponentProps) {
     useEffect(() => {
         const map = mapRef.current;
         const markerLayer = markerLayerRef.current;
-        if (!map || !markerLayer || !fetchStatus || activities.length === 0) return;
+        const L = leafletRef.current;
+        if (!L || !map || !markerLayer || !mapReady || !fetchStatus || activities.length === 0) return;
 
         markerLayer.clearLayers();
 
-        markers.forEach((place, index) => {
-            L.marker([place.coordinates.lat, place.coordinates.lng], { icon: place.icon })
+        places.forEach((place, index) => {
+            const markerHtml = renderToStaticMarkup(
+                <ActivityMarker orderWithinDay={place.orderWithinDay} colour={dateHueMap.get(place.date)} />
+            );
+            const icon = L.divIcon({
+                html: markerHtml,
+                className: 'bonvoyage-map-marker',
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+            });
+
+            L.marker([place.coordinates.lat, place.coordinates.lng], { icon })
                 .on('click', () => clickMarker(index))
                 .addTo(markerLayer);
         });
 
         if (places.length > 0) {
-            map.fitBounds(toLatLngBounds(places), {
+            const bounds = L.latLngBounds(places.map((place) => [place.coordinates.lat, place.coordinates.lng]));
+            map.fitBounds(bounds, {
                 padding: [40, 40],
                 maxZoom: 15,
             });
         }
-    }, [activities.length, clickMarker, fetchStatus, markers, places]);
+    }, [activities.length, clickMarker, dateHueMap, fetchStatus, mapReady, places]);
 
     return (
         <div
