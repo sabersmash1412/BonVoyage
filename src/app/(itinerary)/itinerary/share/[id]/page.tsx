@@ -9,7 +9,7 @@ export default async function ShareHandler({
   const { id } = await params; 
   const { userId } = await getUser();
 
-  const res = await fetch(`${process.env.SITE_URL}/api/duplicateItinerary`, {
+  const res = await fetch(`${(process.env.SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL)}/api/duplicateItinerary`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ 
