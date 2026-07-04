@@ -3,7 +3,6 @@ import { ItineraryPageProps } from "@/types/itinerary/itineraryProps";
 import Dnd from "./_DnD/DndItinerary";
 import MapComponent from "./_Map/MapComponent";
 import { useEffect, useMemo, useState } from "react";
-import { APIProvider } from '@vis.gl/react-google-maps';
 import { ColourContext, getDateHueMap } from "./_context/ColourContext";
 import { ActivityProps } from "@/types/itinerary/activity/activityProps";
 import CostBreakdown from "./CostBreakdown";
@@ -12,8 +11,6 @@ import TripOverview from "@/components/itinerary/TripOverview";
 import { ChevronDownIcon, DollarSign } from 'lucide-react';
 import DeleteDialog from "@/components/itinerary/DeleteDialog";
 import CopyLink from "./CopyLink";
-
-const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
 
 export default function PageContent({ activities, itinerary_id, slug, itineraryOverview }: ItineraryPageProps) {
     const [activitiesArray, setActivitiesArray] = useState<ActivityProps[]>(activities)
@@ -58,22 +55,19 @@ export default function PageContent({ activities, itinerary_id, slug, itineraryO
                 <div className="flex flex-row w-auto 
                                 h-[calc(92vh-0.5rem)] sm:h-[calc(91vh-0.5rem)] md:h-[calc(89vh-0.5rem)] lg:h-[calc(89vh-0.5rem)] 
                 ">
-                    {/* At top of page for PlacesAutocomplete and Maps API so that google APIs are not double loaded */}
-                    <APIProvider apiKey={API_KEY} libraries={['places']}>
-                        <div className="flex gap-x-4 w-full h-full">
-                            <div className="flex-1 h-full">
-                                <MapComponent activities={activitiesArray} />
-                            </div>
-                            <div className="w-1/4 pr-4 h-full overflow-y-auto" id="Dnd">
-                                <Dnd
-                                    activities={activitiesArray}
-                                    setActivities={setActivitiesArray}
-                                    itinerary_id={itinerary_id}
-                                    itineraryOverview={itineraryOverview}
-                                />
-                            </div>
+                    <div className="flex gap-x-4 w-full h-full">
+                        <div className="flex-1 h-full">
+                            <MapComponent activities={activitiesArray} />
                         </div>
-                    </APIProvider>
+                        <div className="w-1/4 pr-4 h-full overflow-y-auto" id="Dnd">
+                            <Dnd
+                                activities={activitiesArray}
+                                setActivities={setActivitiesArray}
+                                itinerary_id={itinerary_id}
+                                itineraryOverview={itineraryOverview}
+                            />
+                        </div>
+                    </div>
                 </div >
                 <AlertDialogContent>
                     <AlertDialogHeader>

@@ -4,6 +4,7 @@ import { createBrowserClient } from '@supabase/ssr';
 
 
 export async function signInWithGoogle() {
+  const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
@@ -12,7 +13,7 @@ export async function signInWithGoogle() {
     options: {
       // Redirect to the login page so the client can process the OAuth response
       // and then forward the user to their original destination.
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/login`,
+      redirectTo: `${siteUrl}/login`,
       queryParams: {
         access_type: "offline",
         prompt: "consent",
