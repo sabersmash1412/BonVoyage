@@ -79,8 +79,8 @@ export function HomeDisclaimer() {
             <div className="flex gap-3 items-start p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
               <Route className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm">
-                <strong className="text-foreground font-medium">Map Display on Google Maps: </strong>
-                <span className="text-muted-foreground">Lack of credits (google maps api)</span>
+                <strong className="text-foreground font-medium">Map Display: </strong>
+                <span className="text-muted-foreground">Uses public OpenStreetMap-based services for demo purposes</span>
               </div>
             </div>
 
@@ -88,7 +88,7 @@ export function HomeDisclaimer() {
               <Route className="h-5 w-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm">
                 <strong className="text-foreground font-medium">Route Optimiser: </strong>
-                <span className="text-muted-foreground">Hence, all distance will be shown as &apos;infinity&apos;</span>
+                <span className="text-muted-foreground">Uses best-effort public OSRM routing for demo purposes</span>
               </div>
             </div>
           </div>

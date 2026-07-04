@@ -4,61 +4,10 @@ import axios from "axios";
 import { Dispatch, SetStateAction } from "react";
 import { toast } from "sonner";
 
-const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
-
-function generateRoutesQueryValues(places: Place[]) {
-    const origins = places
-        .map(p => p.coordinates)
-        .map(c => (
-            {
-                "waypoint": {
-                    "location": {
-                        "latLng": {
-                            "latitude": c.lat,
-                            "longitude": c.lng
-                        }
-                    }
-                }
-            }
-        ))
-
-    const destinations = places
-        .map(p => p.coordinates)
-        .map(c => (
-            {
-                "waypoint": {
-                    "location": {
-                        "latLng": {
-                            "latitude": c.lat,
-                            "longitude": c.lng
-                        }
-                    }
-                },
-            }
-        ))
-
-    const data = {
-        "origins": origins,
-        "destinations": destinations,
-        "travelMode": "DRIVE",
-        "routingPreference": "TRAFFIC_AWARE"
-    }
-
-    const headers = {
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Goog-Api-Key': API_KEY,
-            'X-Goog-FieldMask': 'originIndex,destinationIndex,duration,distanceMeters,status,condition'
-        }
-    }
-    return { data, headers }
-}
-
 async function getRouteMatrix(places: Place[]): Promise<PlacesAPIMatrix[] | null> {
     console.log("getting route matrix for coors: ", places.map(p => p.coordinates))
-    const { data, headers } = generateRoutesQueryValues(places)
     try {
-        const response = await axios.post('https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix', data, headers)
+        const response = await axios.post('/api/routeMatrix', { places })
         const matrix: PlacesAPIMatrix[] = response.data
         console.log("matrix: ", matrix)
         return response.data

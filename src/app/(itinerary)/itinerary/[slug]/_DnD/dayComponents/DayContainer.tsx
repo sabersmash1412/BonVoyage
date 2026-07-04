@@ -13,10 +13,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { handleAddActivity, handleDeleteDay } from "./activityComponents/ActivityCardController";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import usePlacesAutocomplete, {
-    getGeocode,
-    getLatLng,
-} from "use-places-autocomplete";
 import useOnclickOutside from "react-cool-onclickoutside";
 import React from 'react';
 import { Button } from "@/components/ui/button";
@@ -28,6 +24,12 @@ import { useAddActivityForm } from "./useAddActivityForm";
 import { useColourContext } from "../../_context/ColourContext";
 import BetweenActivities from "@/components/itinerary/BetweenActivities";
 import { InfoBetweenActivities } from "@/types/itinerary/activity/activityProps";
+
+type PlaceSearchResult = {
+    label: string;
+    lat: number;
+    lng: number;
+}
 
 export default function DayContainer({ row, activities, setActivities, itinerary_id, setDays }: RowProps) {
     const [isOpenActivityBox, setIsOpenActivityBox] = useState(false)
@@ -237,19 +239,48 @@ function ActivityList({ row, activities, setActivities, itinerary_id, setDays, s
 
 function PlacesAutoCompleteForm({ day, activities, itinerary_id, setActivities, setIsOpenActivityBox, closeActivityBoxFtn }: UpdateActivityProps & { closeActivityBoxFtn: () => void }) {
     const [coordinates, setCoordinates] = useState<Coordinates | null>(null)
+    const [value, setValue] = useState("")
+    const [suggestions, setSuggestions] = useState<PlaceSearchResult[]>([])
+    const [isSearching, setIsSearching] = useState(false)
 
-    const {
-        ready,
-        value,
-        suggestions: { status, data },
-        setValue,
-        clearSuggestions,
-    } = usePlacesAutocomplete({
-        requestOptions: {
-            /* To define search scope here */
-        },
-        debounce: 300,
-    });
+    const clearSuggestions = useCallback(() => {
+        setSuggestions([])
+    }, [])
+
+    useEffect(() => {
+        if (value.trim().length < 3) {
+            clearSuggestions()
+            return
+        }
+
+        const controller = new AbortController()
+        const timeout = window.setTimeout(async () => {
+            try {
+                setIsSearching(true)
+                const response = await fetch(`/api/placeSearch?q=${encodeURIComponent(value)}`, {
+                    signal: controller.signal,
+                })
+                if (!response.ok) {
+                    setSuggestions([])
+                    return
+                }
+
+                const data = await response.json() as { results?: PlaceSearchResult[] }
+                setSuggestions(data.results ?? [])
+            } catch (error) {
+                if (error instanceof DOMException && error.name === "AbortError") return
+                console.error(error)
+                setSuggestions([])
+            } finally {
+                setIsSearching(false)
+            }
+        }, 300)
+
+        return () => {
+            controller.abort()
+            window.clearTimeout(timeout)
+        }
+    }, [clearSuggestions, value])
 
     // When the user clicks outside of the component, clear searched suggestions using this method
     const ref = useOnclickOutside(() => {
@@ -261,36 +292,19 @@ function PlacesAutoCompleteForm({ day, activities, itinerary_id, setActivities, 
         setValue(e.target.value);
     };
 
-    const handleSelect = (suggestion: { description: string }) =>
+    const handleSelect = (suggestion: PlaceSearchResult) =>
         () => {
-            const { description } = suggestion;
-            // When the user selects a place, set the second parameter to "false"
-            // so that keyword is replaced and no API request is made
-            setValue(description, false);
+            setValue(suggestion.label);
             clearSuggestions();
-
-            // gets latitude and longitude
-            getGeocode({ address: description }).then((results) => {
-                const { lat, lng } = getLatLng(results[0]);
-                console.log("Coordinates: ", { lat, lng });
-                setCoordinates({ lat, lng })
-
-            });
+            setCoordinates({ lat: suggestion.lat, lng: suggestion.lng })
         };
 
     const renderSuggestions = () =>
-        data.map((suggestion) => {
-            const {
-                place_id,
-                structured_formatting: { main_text, secondary_text },
-            } = suggestion;
-
-            return (
-                <li key={place_id} onClick={handleSelect(suggestion)} className="hover:bg-gray-400">
-                    <strong>{main_text}</strong> <small>{secondary_text}</small>
-                </li>
-            );
-        });
+        suggestions.map((suggestion) => (
+            <li key={`${suggestion.label}-${suggestion.lat}-${suggestion.lng}`} onClick={handleSelect(suggestion)} className="hover:bg-gray-400">
+                <strong>{suggestion.label}</strong>
+            </li>
+        ));
 
     // pass AddActivityFormType values to onsubmit
     // location pass as argument here unused as it only contains text user types, not actual autocomplete value
@@ -299,6 +313,11 @@ function PlacesAutoCompleteForm({ day, activities, itinerary_id, setActivities, 
 
         // value wouldnt be null as it would be prevented by react hook form using error messages
         const castCoordinates = coordinates as Coordinates
+        if (!castCoordinates) {
+            form.setError("location", { message: "Please select a location from the suggestions" })
+            return
+        }
+
         const submitFunction = handleAddActivity({ day, activities, itinerary_id, setActivities, setIsOpenActivityBox })
         const addActivityObject = {
             title: data.description,
@@ -335,12 +354,12 @@ function PlacesAutoCompleteForm({ day, activities, itinerary_id, setActivities, 
                                                 field.onChange(e);  // update react-hook-form
                                                 handleInput(e);     // update autocomplete state
                                             }}
-                                            disabled={!ready}
                                             placeholder="Type a location"
                                         />
-                                        {status === "OK" && (
+                                        {suggestions.length > 0 && (
                                             <ul data-cy="rendered-suggestions" className="cursor-pointer">{renderSuggestions()}</ul>
                                         )}
+                                        {isSearching && <div className="text-sm text-muted-foreground">Searching...</div>}
                                     </div>
                                 </FormControl>
                                 <FormMessage />

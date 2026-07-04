@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,13 +17,17 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClientComponentClient();
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault(); 
     setLoading(true);
 
     try {
+      const supabase = createClient();
+      if (!supabase) {
+        throw new Error("Supabase client is not available");
+      }
+
       const { error } = await supabase.auth.updateUser({ password });
 
       if (error) {
